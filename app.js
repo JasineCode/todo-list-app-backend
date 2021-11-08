@@ -6,7 +6,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
-    database: 'todoDataBase'
+    database: 'todosDB'
 })
 
 //Connect
@@ -21,7 +21,7 @@ const app = express()
 //Create DB
 app.get('/create-todo-db', (req, res) => {
 
-    let sql = 'CREATE DATABASE If NOT EXISTS todoDataBase';
+    let sql = 'CREATE DATABASE If NOT EXISTS todoDB';
     db.query(sql, (err, queryRes) => {
         if (err) throw err
         console.log(queryRes);
@@ -36,8 +36,7 @@ app.get('/create-todo-table', (req, res) => {
                     ( 
                         id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
                         title VARCHAR(60),
-                        createAt DATE DEFAULT (CURRENT_DATE),
-                        isCompleted INT
+                        status enum('COMPLETED', 'INPROGRESS', 'CANCELED')
                     )`
 
 
@@ -52,8 +51,8 @@ app.get('/create-todo-table', (req, res) => {
 app.get('/insert-todo-row',(req,res)=>{
 
     //new todo object
-    let todo = {title:"create todoDatabase",isCompleted:1}
-    let sql = ` INSERT INTO TODOS SET ?`
+    let todo = {title:"create the database",status:"INPROGRESS"}
+    let sql = ` INSERT INTO TODOS SET ? `
 
     db.query(sql,todo,(err, result) => {
         if (err) throw err;
