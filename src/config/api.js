@@ -1,5 +1,6 @@
 const API_URL = {
-    user:"/users",
-    todo:"/todos"
-} 
+    user:"/api/users",
+    todo:"/api/todos",
+}
+
 exports.API_URL = API_URL
