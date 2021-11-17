@@ -1,7 +1,10 @@
 const express = require("express")
-const { addUser } = require("./api/user")
+const { addTodo } = require("./api/todo")
+const { register, login } = require("./api/user")
 const { API_URL } = require("./config/api")
 const { db } = require("./config/mysql")
+
+const { TaskStatusEnum } = require("./data/enum/TaskStatus")
 
 
 //Connect
@@ -17,4 +20,8 @@ app.listen('9000', () => {
 })
 
 //user api
-app.get(`${API_URL.user}/add`,addUser)
+app.get(`/${API_URL.user}/register`,register)
+app.get(`/${API_URL.user}/login`,login)
+
+//todo api
+app.get(`/${API_URL.user}/:userId/${API_URL.todo}/add`,addTodo)

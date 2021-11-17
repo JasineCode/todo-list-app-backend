@@ -1,49 +1,52 @@
 const { db } = require("../config/mysql");
+const { Credentials } = require("../models/credential");
 const { UserModel } = require("../models/user");
 
 //register user
-exports.addUser = (req, resp) => {
+exports.register = (req, resp) => {
 
     //fetch data from req
     let newUser = new UserModel(
         "saytama",
         "yamagi",
         "http://assets.stickpng.com/images/58582c01f034562c582205ff.png",
-        "ddd",
-        "Pass12311"
+        "ddddd",
+        "Pass1234"
     )
-    //validate data 
+    
+    //validate data
     //password
+    let passwordPattern = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,12}$/
     if (
-        newUser.password.length < 8
-        || newUser.password.length > 12
+        !passwordPattern.test(newUser.password)
     ) {
-        resp.send("<h1 style='color:red'>Password Should be at least 8 characters & maximum 12 😅 !!</h1>")
+        resp.send("<h1 style='color:red'>Password Should be at least 8 characters & maximum 12 and contains at least one number one uppercase and lowercase😅 !!</h1>")
         return
     }
     //username
-    if (newUser.username.length < 4 ||
-        newUser.username.length > 12) {
+    let usernamePattern=/^.{4,12}$/
+    if (!usernamePattern.test(newUser.username)) {
         resp.send("<h1 style='color:red'>Username Should be at least 4 characters & maximum 12 😅 !!</h1>")
         return
     }
     //firstname
-    if (newUser.firstname.length < 4 ||
-        newUser.firstname.length > 12) {
+    let firstnamePattern = /^.{4,12}$/
+    if (!firstnamePattern.test(newUser.firstname)) {
         resp.send("<h1 style='color:red'>FirstName Should be at least 4 characters & maximum 12 😅 !!</h1>")
         return
     }
     //lastname
-    if (newUser.lastname.length < 4 ||
-        newUser.lastname.length > 12) {
+    let lastnamePattern = /^.{4,12}$/
+    if (!lastnamePattern.test(newUser.lastname)) {
         resp.send("<h1 style='color:red'>LastName Should be at least 4 characters & maximum 12 😅 !!</h1>")
         return
     }
     //verify if the username already exist 
-    db.query(`
-           SELECT * FROM USERS 
-           WHERE username ='${newUser.username} '    
-    `, (err, resQ) => {
+    db.query(
+            `
+                SELECT * FROM USERS 
+                WHERE username ='${newUser.username}'    
+        `, (err, resQ) => {
         if (err) throw err
         else {
             console.log(resQ);
@@ -68,4 +71,31 @@ exports.addUser = (req, resp) => {
 
 
 
+}
+exports.login = (req,resp)=>{
+
+    let credentials = new Credentials(
+        "yassine.rassy1@gmail.com",
+        "Pass1234"
+    )
+
+    //search user by username and password 
+    let query = `
+        SELECT * 
+        FROM USERS
+        WHERE username='${credentials.username}'
+        AND password='${credentials.password}'
+    `
+    //apply query
+    db.query(query,(err,resQ)=>{
+        if(err) throw err
+        else {
+            console.log(resQ)
+            //result 
+            if(resQ.length===0) 
+            resp.send("user Not Found Try to register...")
+            else
+            resp.send("hello & welcome "+resQ[0]["FIRSTNAME"])
+        }
+    })
 }
