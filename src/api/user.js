@@ -1,46 +1,25 @@
 const { db } = require("../config/mysql");
+const randomString = require('randomstring');
+
+const { validateRegisterData } = require("../helpers/register-valid");
 const { Credentials } = require("../models/credential");
 const { UserModel } = require("../models/user");
+const { transport } = require("../config/mailer");
 
 //register user
 exports.register = (req, resp) => {
 
     //fetch data from req
     let newUser = new UserModel(
-        "saytama",
-        "yamagi",
+        "Yassine",
+        "Trafargaro",
         "http://assets.stickpng.com/images/58582c01f034562c582205ff.png",
-        "ddddd",
+        "yassine.rassy1@gmail.com",
         "Pass1234"
     )
     
     //validate data
-    //password
-    let passwordPattern = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,12}$/
-    if (
-        !passwordPattern.test(newUser.password)
-    ) {
-        resp.send("<h1 style='color:red'>Password Should be at least 8 characters & maximum 12 and contains at least one number one uppercase and lowercase😅 !!</h1>")
-        return
-    }
-    //username
-    let usernamePattern=/^.{4,12}$/
-    if (!usernamePattern.test(newUser.username)) {
-        resp.send("<h1 style='color:red'>Username Should be at least 4 characters & maximum 12 😅 !!</h1>")
-        return
-    }
-    //firstname
-    let firstnamePattern = /^.{4,12}$/
-    if (!firstnamePattern.test(newUser.firstname)) {
-        resp.send("<h1 style='color:red'>FirstName Should be at least 4 characters & maximum 12 😅 !!</h1>")
-        return
-    }
-    //lastname
-    let lastnamePattern = /^.{4,12}$/
-    if (!lastnamePattern.test(newUser.lastname)) {
-        resp.send("<h1 style='color:red'>LastName Should be at least 4 characters & maximum 12 😅 !!</h1>")
-        return
-    }
+    if( validateRegisterData(newUser,req,resp) )    
     //verify if the username already exist 
     db.query(
             `
@@ -55,6 +34,25 @@ exports.register = (req, resp) => {
             } else {
                 //Insert sql query
                 let query = `INSERT INTO USERS SET ?`
+
+                //generate the secret token & set verified to false (in default)
+                newUser.setEmailToken(randomString.generate())
+
+                //send mail to newUser's email account 
+                //mail options
+                const mailOptions = {
+                    from:"todoApp@GMC.com",
+                    to:newUser.username,
+                    subject:"Please Verify your email Account",
+                    html:`<a href="http://localhost:9000/api/auth/${newUser.username}/code/${newUser.email_token}">Verify My Email</a>`
+                }
+                transport.sendMail(mailOptions,(err,info)=>{
+                    if(err) throw err 
+                    else {
+                        console.log(info)
+                    }
+                })
+
 
                 //work with db 
                 db.query(query, newUser, (err, resQ) => {
